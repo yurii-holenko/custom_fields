@@ -77,6 +77,24 @@ module CustomFields
         authenticate_user(user)
         present user, with: CustomFields::Entities::User
       end
+
+      desc 'Update current user profile' do
+        success CustomFields::Entities::User
+        failure [[422, 'Variable', CustomFields::Entities::Error]]
+      end
+      params do
+        optional :custom_fields, type: Hash, match_tenant_requirements: true
+      end
+      put 'profile' do
+        whitelisted = declared_params[:custom_fields].slice(*current_user.tenant.fields.pluck(:name))
+        current_user.assign_attributes(whitelisted)
+
+        if current_user.errors.any?
+          raise ::ValidationError, current_user.errors.full_messages
+        end
+        current_user.save!
+        present current_user.reload, with: CustomFields::Entities::User
+      end
     end
   end
 end

@@ -222,4 +222,48 @@ describe ::CustomFields::Users do
       end
     end
   end
+  describe 'PUT#profile' do
+    let(:tenant) { FactoryBot.create(:tenant) }
+    let!(:user) { FactoryBot.create(:user, tenant: tenant, email: 'mail@gmail.com') }
+    let!(:string_field) { FactoryBot.create(:string_field, tenant: tenant, name: 'address') }
+
+    context 'only tenant fields allowed' do
+      it 'updates user with custom field value' do
+        put '/api/users/profile', **{
+          params: {
+            custom_fields: {
+              address: 'Kyiv, Khreshchatyk 11',
+              address1: 'Kyiv, Khreshchatyk 11'
+            }
+          },
+          headers: authorization_header(user)
+        }
+
+        expect_json(
+          email: user.email,
+          address: 'Kyiv, Khreshchatyk 11'
+        )
+      end
+    end
+    context 'respect value validation' do
+      let(:length_validation) { FactoryBot.create(:length_attribute_validation, value: 5) }
+      let!(:field_validation) do
+        FactoryBot.create(:length_field_validation, field: string_field, attribute_validation: length_validation)
+      end
+
+      it 'return error' do
+        put '/api/users/profile', **{
+          params: {
+            custom_fields: {
+              address: 'Kyiv, Khreshchatyk 11'
+            }
+          },
+          headers: authorization_header(user)
+        }
+        expect_json(
+          error: { code: 1000, message: ['Address Must be 5 long'] }
+        )
+      end
+    end
+  end
 end

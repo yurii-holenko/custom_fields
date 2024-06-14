@@ -4,14 +4,14 @@ require 'rails_helper'
 
 RSpec.describe User, type: :model do
   let(:tenant) { FactoryBot.create(:tenant) }
-  let!(:user) { FactoryBot.create(:user, tenant:, email: 'mail@gmail.com') }
+  let!(:user) { FactoryBot.create(:user, tenant: tenant, email: 'mail@gmail.com') }
 
   describe 'custom_fields' do
     context 'string field type' do
       let(:expected_value) { 'Kyiv, Khreshchatyk 11' }
-      let!(:string_field) { FactoryBot.create(:string_field, tenant:, name: 'address') }
+      let!(:string_field) { FactoryBot.create(:string_field, tenant: tenant, name: 'address') }
       let!(:custom_field) do
-        FactoryBot.create(:string_custom_field, user:, field: string_field, string_value: expected_value)
+        FactoryBot.create(:string_custom_field, user: user, field: string_field, string_value: expected_value)
       end
       it 'add custom field to user' do
         initialized_user = User.find_by_email('mail@gmail.com')
@@ -23,7 +23,7 @@ RSpec.describe User, type: :model do
     describe 'custom field validation' do
       let(:default_value) { 'Kyiv, Khreshchatyk 11' }
       let(:length_validation) { FactoryBot.create(:length_attribute_validation, value: 5) }
-      let(:string_field) { FactoryBot.create(:string_field, tenant:, name: 'address') }
+      let(:string_field) { FactoryBot.create(:string_field, tenant: tenant, name: 'address') }
       let!(:field_validation) do
         FactoryBot.create(:length_field_validation, field: string_field, attribute_validation: length_validation)
       end

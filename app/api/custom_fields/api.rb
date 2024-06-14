@@ -7,7 +7,9 @@ module CustomFields
     )
     auth :custom_fields_token_authenticate, resource: :user
 
+    include ::Helpers
     include CustomFields::Exceptions
+    require_relative 'validations/match_tenant_requirements'
 
     # Models
     mount CustomFields::Users
